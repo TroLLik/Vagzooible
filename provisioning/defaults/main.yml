@@ -1,0 +1,4 @@
+# file: provisioning/defaults/main.yml
+---
+zoo_version: 3.4.5+dfsg
+buld_path: /tmp/dev/deb/zookeeper

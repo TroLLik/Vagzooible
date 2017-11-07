@@ -1,0 +1,68 @@
+# file: provisioning/tasks/build.yml
+---
+
+    #Create a directory for building
+    - file:
+        path: "{{ buld_path }}"
+        state: directory
+        mode: 0755
+
+    - name: Resiving a key
+      command: gpg --keyserver keyserver.ubuntu.com --recv-key 0xA0E7D8C3
+      become: true
+
+    - name: Fix key path
+      lineinfile: dest=/etc/devscripts.conf
+                  regexp='^# DSCVERIFY_KEYRINGS=""'
+                  line='DSCVERIFY_KEYRINGS="~/.gnupg/pubring.gpg:/etc/apt/trusted.gpg"'
+                  state=present
+      become: true
+
+    - name: Getting ZooKepper packges sources
+      command: dget http://archive.ubuntu.com/ubuntu/pool/universe/z/zookeeper/zookeeper_{{ zoo_version }}-1.dsc
+      args:
+        chdir: "{{ buld_path }}"
+      become: true
+
+    # - name: Fix permissions
+    #   shell: chown -R vagrant:vagrant "{{ buld_path }}";
+    #   become: true
+
+    - name: Fix permissions
+      file: dest={{ buld_path }} state=directory
+            owner=vagrant group=vagrant
+            mode=0775
+            recurse=yes
+      become: true
+
+    - name: Unpacking our sources
+      command: dpkg-source -x zookeeper_{{ zoo_version }}-1.dsc
+      args:
+        chdir: "{{ buld_path }}"
+
+    - name: Set new build information
+      shell: DEBEMAIL="Sergey Zatsepilin <troll.lox@gmail.com>" debchange -R "Just rebuild"
+      args:
+        chdir: "{{ buld_path }}/zookeeper-{{ zoo_version }}"
+
+    - name: Build the packages
+      command: dpkg-buildpackage -rfakeroot
+      args:
+        chdir: "{{ buld_path }}/zookeeper-{{ zoo_version }}"
+
+    - name: Install of built ZooKeeper packages
+      apt: deb={{ item }}
+      with_items:
+        - "{{ buld_path }}/libzookeeper-java_{{ zoo_version }}-1build1_all.deb"
+        - "{{ buld_path }}/zookeeper_{{ zoo_version }}-1build1_all.deb"
+        - "{{ buld_path }}/libzookeeper-mt2_{{ zoo_version }}-1build1_amd64.deb"
+        - "{{ buld_path }}/zookeeper-bin_{{ zoo_version }}-1build1_amd64.deb"
+        - "{{ buld_path }}/zookeeperd_{{ zoo_version }}-1build1_all.deb"
+      become: true
+
+    # Pause for 20 seconds to run ZooKepper deamon.
+    - pause:
+        seconds: 20
+
+    # - name: Delete build data
+    #   shell: rm -rf /tmp/dev

@@ -1,0 +1,28 @@
+# file: provisioning/tasks/tests.yml
+---
+
+    - name: Testing (process/port)
+      shell: netstat -tpln | grep 2181
+      register: cmd_result
+      become: true
+    - assert:
+        that:
+          - "'java' in cmd_result.stdout"
+
+    - name: Testing put/get value form ZooKepper 
+      shell: /usr/share/zookeeper/bin/zkCli.sh -server 127.0.0.1:2181 create /tkey1 value1
+      register: cmd_result
+    - assert:
+        that:
+          - "'Node already exists' not in cmd_result.stderr"
+          - "'Created' in cmd_result.stderr"
+
+    - shell: /usr/share/zookeeper/bin/zkCli.sh -server 127.0.0.1:2181 get /tkey1 value1
+      register: cmd_result
+    - assert:
+        that:
+          - "'Node does not exist' not in cmd_result.stderr"
+          - "'value1' in cmd_result.stdout"
+
+    - name: Delete test data from ZooKepper
+      shell: /usr/share/zookeeper/bin/zkCli.sh -server 127.0.0.1:2181 delete /tkey1

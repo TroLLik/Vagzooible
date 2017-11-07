@@ -1,0 +1,18 @@
+# file: provisioning/tasks/main.yml
+---
+- hosts: all
+  gather_facts: no
+  vars_files:
+    - ../defaults/main.yml
+
+  tasks:
+
+  - import_tasks: common.yml
+    tags:
+      - common
+  - import_tasks: build.yml
+    tags:
+      - build
+  - include_tasks: tests.yml
+    tags:
+      - tests

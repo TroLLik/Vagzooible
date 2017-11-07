@@ -1,0 +1,61 @@
+# file: provisioning/tasks/common.yml
+---
+
+    - name: Update apt cache
+      apt: update_cache=yes
+      become: true
+
+    - name: Install deb-building tools
+      apt:
+        name:
+          - debhelper
+          - dh-make
+          - devscripts
+          - fakeroot
+          - build-essential
+          - automake
+          - gnupg
+          - lintian
+      become: true
+
+    - name: Install zookeeper dependencies
+      apt:
+        name:
+          - default-jre-headless
+          - openjdk-6-jre-headless
+          - openjdk-7-jre-headless
+          - libjline-java 
+          - libnetty-java
+          - libslf4j-java
+      become: true
+
+    - name: Install zookeeper building dependencies
+      apt:
+        name:
+          - ant
+          - ant-optional
+          - default-jdk
+          - default-jdk-doc
+          - help2man
+          - javacc
+          - javahelper
+          - junit4
+          - libboost-dev
+          - libcppunit-dev
+          - liblog4cxx10-dev
+          - libmockito-java
+          - libtool
+          - libxml2-dev
+          - python-all-dev
+          - liblog4j1.2-java
+      become: true
+
+    - name: Remove useless packages from the cache
+      apt:
+        autoclean: yes
+      become: true
+
+    - name: Remove dependencies that are no longer required
+      apt:
+       autoremove: yes
+      become: true
