@@ -9,7 +9,7 @@
         that:
           - "'java' in cmd_result.stdout"
 
-    - name: Testing put/get value form ZooKepper 
+    - name: Testing put/get value to/form ZooKepper 
       shell: /usr/share/zookeeper/bin/zkCli.sh -server 127.0.0.1:2181 create /tkey1 value1
       register: cmd_result
     - assert:
